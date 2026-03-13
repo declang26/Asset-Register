@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Asset Register</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--white:#fff;--border:#e2e6ec;
+  --text:#1c2533;--muted:#5a6478;--dim:#9aa3b0;
+  --blue:#2563eb;--blue-bg:#eff4ff;--blue-bd:#bfcffe;
+  --green:#059669;--green-bg:#ecfdf5;
+  --amber:#b45309;--amber-bg:#fffbeb;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --sky:#0369a1;--sky-bg:#f0f9ff;
+  --purple:#6d28d9;--purple-bg:#f5f3ff;
+  --row-hover:#fafbfc;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:8px;--r-sm:5px;
+}
+[data-theme="dark"]{
+  --bg:#0f1117;--white:#1a1f2e;--border:#2a3045;
+  --text:#e8ecf4;--muted:#8892a4;--dim:#56637a;
+  --blue:#4d90fe;--blue-bg:#1a2540;--blue-bd:#2a3f6e;
+  --green:#34d399;--green-bg:#0d2a1f;
+  --amber:#fbbf24;--amber-bg:#2a1f07;
+  --red:#f87171;--red-bg:#2a0f0f;
+  --sky:#38bdf8;--sky-bg:#0a1f2e;
+  --purple:#a78bfa;--purple-bg:#1e1230;
+  --row-hover:#1f2535;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;transition:background .2s,color .2s}
+/* THEME TOGGLE */
+.theme-toggle{width:36px;height:36px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;flex-shrink:0}
+.theme-toggle:hover{background:var(--bg);border-color:var(--muted)}
+
+/* NAV */
+.nav{background:var(--white);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:40;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+.brand-icon{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.nav-r{display:flex;align-items:center;gap:8px}
+.pill{font-size:11px;font-family:var(--mono);background:var(--bg);border:1px solid var(--border);padding:3px 10px;border-radius:20px;color:var(--muted)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-blue:hover{background:#1d4ed8}
+.btn-white{background:var(--white);color:var(--text);border-color:var(--border)}.btn-white:hover{background:var(--bg)}
+.btn-red{background:var(--red-bg);color:var(--red);border-color:#fecaca}.btn-red:hover{background:#fee2e2}
+.btn-sm{padding:5px 12px;font-size:12px}
+
+/* PAGE VIEWS */
+.view{display:none}.view.active{display:block}
+.page{max-width:1400px;margin:0 auto;padding:20px 24px 48px}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}
+.sc{background:var(--white);border:1px solid var(--border);border-top:3px solid transparent;border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:all .15s;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.sc:hover,.sc.on{box-shadow:0 4px 12px rgba(0,0,0,.09);transform:translateY(-1px)}
+.sc.on{border-top-width:3px}
+.sc-n{font-size:24px;font-weight:600;line-height:1;margin-bottom:3px}
+.sc-l{font-size:12px;color:var(--muted)}
+.c-blue{border-top-color:var(--blue)}.c-blue .sc-n{color:var(--blue)}
+.c-green{border-top-color:var(--green)}.c-green .sc-n{color:var(--green)}
+.c-amber{border-top-color:var(--amber)}.c-amber .sc-n{color:var(--amber)}
+.c-red{border-top-color:var(--red)}.c-red .sc-n{color:var(--red)}
+.c-sky{border-top-color:var(--sky)}.c-sky .sc-n{color:var(--sky)}
+.c-purple{border-top-color:var(--purple)}.c-purple .sc-n{color:var(--purple)}
+
+/* TOOLBAR */
+.toolbar{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:11px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.sw{position:relative;flex:1;min-width:200px}
+.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim);pointer-events:none}
+.si{width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 10px 7px 32px;font-family:var(--font);font-size:13px;background:var(--bg);outline:none;color:var(--text);transition:border-color .15s}
+.si:focus{border-color:var(--blue);background:var(--white)}
+.si::placeholder{color:var(--dim)}
+.sel{border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;font-family:var(--font);font-size:13px;background:var(--bg);color:var(--muted);outline:none;cursor:pointer}
+.sel:focus{border-color:var(--blue)}
+.divider{width:1px;height:26px;background:var(--border);flex-shrink:0}
+
+/* TABLE */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+thead{background:var(--bg);border-bottom:2px solid var(--border)}
+th{padding:9px 13px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--blue)}
+td{padding:10px 13px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--row-hover)}
+.id{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--blue)}
+.pa{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:1px}
+.bold{font-weight:500}
+.gray{color:var(--muted);font-size:12px}
+.mono{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.edit-btn{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd);font-size:12px;padding:4px 12px;border-radius:var(--r-sm);cursor:pointer;font-family:var(--font);font-weight:500;transition:all .15s}
+.edit-btn:hover{background:#dbeafe;border-color:#93b4fd}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%}
+.bActive{background:var(--green-bg);color:var(--green)}.bActive::before{background:var(--green)}
+.bDisposed{background:var(--red-bg);color:var(--red)}.bDisposed::before{background:var(--red)}
+.bIT-Storage{background:var(--amber-bg);color:var(--amber)}.bIT-Storage::before{background:var(--amber)}
+.bLong-Term-Absence{background:var(--sky-bg);color:var(--sky)}.bLong-Term-Absence::before{background:var(--sky)}
+.bAwaiting{background:var(--purple-bg);color:var(--purple)}.bAwaiting::before{background:var(--purple)}
+
+/* TABLE FOOTER */
+.tfoot{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-top:1px solid var(--border);background:var(--bg);flex-wrap:wrap;gap:8px}
+.tinfo{font-size:12px;color:var(--muted)}
+.pag{display:flex;gap:4px}
+.pb{min-width:30px;height:30px;border:1px solid var(--border);background:var(--white);border-radius:var(--r-sm);font-size:12px;font-family:var(--font);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 6px;transition:all .12s}
+.pb:hover:not([disabled]){border-color:var(--blue);color:var(--blue)}
+.pb.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.pb[disabled]{opacity:.35;cursor:default}
+.empty{padding:60px 24px;text-align:center;color:var(--dim)}
+.empty p:first-child{font-size:32px;margin-bottom:8px}
+.empty p:last-child{font-size:13px;color:var(--muted)}
+
+/* EDIT SCREEN */
+.edit-hd{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.back{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:13px;cursor:pointer;background:none;border:none;font-family:var(--font);padding:6px 10px;border-radius:var(--r-sm);transition:all .15s}
+.back:hover{background:var(--white);color:var(--text)}
+.edit-name{font-size:20px;font-weight:600}
+.edit-sub{font-size:13px;color:var(--muted);margin-top:3px}
+.sections{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.section{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.section.wide{grid-column:1/-1}
+.sec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.wide{grid-column:1/-1}
+.field label{font-size:12px;font-weight:500;color:var(--muted)}
+.field input,.field select{border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none;width:100%;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.field input[readonly]{background:var(--bg);color:var(--dim);cursor:default;opacity:.8}
+.actions{margin-top:20px;display:flex;gap:10px;justify-content:flex-end;align-items:center}
+.actions-left{margin-right:auto}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .sections{grid-template-columns:1fr}
+  .section.wide{grid-column:1}
+  .fields{grid-template-columns:1fr}
+  .field.wide{grid-column:1}
+}
+@media(max-width:580px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+
+<nav class="nav">
+  <div class="brand">
+    <div class="brand-icon">&#128187;</div>
+    IT Asset Register
+  </div>
+  <div class="nav-r">
+    <span class="pill" id="nav-count">Loading…</span>
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">&#9790;</button>
+    <button class="btn btn-white btn-sm" onclick="exportCSV()">&#8681; Export CSV</button>
+    <button class="btn btn-blue btn-sm" onclick="showAdd()">+ Add Asset</button>
+  </div>
+</nav>
+
+<!-- ====== LIST VIEW ====== -->
+<div id="v-list" class="view active">
+<div class="page">
+
+  <div class="stats">
+    <div class="sc c-blue on" id="sc-all" onclick="quickFilter('')"><div class="sc-n" id="s-all">—</div><div class="sc-l">Total</div></div>
+    <div class="sc c-green"  id="sc-act" onclick="quickFilter('Active')"><div class="sc-n" id="s-act">—</div><div class="sc-l">Active</div></div>
+    <div class="sc c-amber"  id="sc-sto" onclick="quickFilter('IT Storage')"><div class="sc-n" id="s-sto">—</div><div class="sc-l">IT Storage</div></div>
+    <div class="sc c-red"    id="sc-dis" onclick="quickFilter('Disposed')"><div class="sc-n" id="s-dis">—</div><div class="sc-l">Disposed</div></div>
+    <div class="sc c-sky"    id="sc-abs" onclick="quickFilter('Long Term Absence')"><div class="sc-n" id="s-abs">—</div><div class="sc-l">Long Term Abs.</div></div>
+    <div class="sc c-purple" id="sc-awa" onclick="quickFilter('Awaiting')"><div class="sc-n" id="s-awa">—</div><div class="sc-l">Awaiting</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="sw">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="si" id="q" type="text" placeholder="Search ID, name, user, serial, department…" oninput="runFilter()">
+    </div>
+    <div class="divider"></div>
+    <select class="sel" id="f-st" onchange="runFilter()">
+      <option value="">All statuses</option>
+      <option>Active</option><option>IT Storage</option><option>Disposed</option><option>Long Term Absence</option><option>Awaiting</option>
+    </select>
+    <select class="sel" id="f-tp" onchange="runFilter()"><option value="">All types</option></select>
+    <select class="sel" id="f-dp" onchange="runFilter()"><option value="">All departments</option></select>
+    <div class="divider"></div>
+    <select class="sel" id="f-pp" onchange="runFilter()">
+      <option value="50">50 / page</option><option value="100">100 / page</option><option value="250">250 / page</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('id')">Asset ID</th>
+            <th onclick="sortBy('serial')">Serial No.</th>
+            <th onclick="sortBy('name')">Description</th>
+            <th onclick="sortBy('category')">Type</th>
+            <th onclick="sortBy('currentUser')">Current User</th>
+            <th onclick="sortBy('department')">Department</th>
+            <th onclick="sortBy('purchaseDate')">Purchase Date</th>
+            <th>Status</th>
+            <th style="width:70px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none">
+        <p>&#128269;</p><p>No assets match your filters</p>
+      </div>
+    </div>
+    <div class="tfoot">
+      <span class="tinfo" id="tinfo"></span>
+      <div class="pag" id="pag"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ====== EDIT VIEW ====== -->
+<div id="v-edit" class="view">
+<div class="page">
+  <div class="edit-hd">
+    <button class="back" onclick="showList()">&#8592; Back to register</button>
+    <div>
+      <div class="edit-name" id="edit-title">Edit Asset</div>
+      <div class="edit-sub" id="edit-sub"></div>
+    </div>
+    <div style="margin-left:auto">
+      <span class="pill" id="edit-badge"></span>
+    </div>
+  </div>
+
+  <div class="sections">
+    <div class="section">
+      <div class="sec-title">Device Information</div>
+      <div class="fields">
+        <div class="field"><label>Asset ID</label><input id="e-id" readonly></div>
+        <div class="field"><label>PA Number</label><input id="e-pa" placeholder="e.g. PA059999"></div>
+        <div class="field wide"><label>Device Description</label><input id="e-name" placeholder="e.g. MacBook Pro 14"></div>
+        <div class="field"><label>Device Type</label><input id="e-cat" placeholder="e.g. Standard Laptop"></div>
+        <div class="field"><label>Serial Number</label><input id="e-ser" placeholder="Serial number"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Status</div>
+      <div class="fields">
+        <div class="field wide">
+          <label>Current Status</label>
+          <select id="e-status">
+            <option>Active</option>
+            <option>IT Storage</option>
+            <option>Disposed</option>
+            <option>Long Term Absence</option>
+            <option>Awaiting</option>
+          </select>
+        </div>
+        <div class="field"><label>Disposal Date</label><input id="e-dd" placeholder="DD/MM/YYYY"></div>
+        <div class="field"><label>Disposal Ticket Ref</label><input id="e-dt"></div>
+      </div>
+    </div>
+
+    <div class="section wide">
+      <div class="sec-title">Assignment &amp; Purchase</div>
+      <div class="fields">
+        <div class="field wide"><label>Current User</label><input id="e-user" placeholder="Name or Shared Device"></div>
+        <div class="field"><label>Department</label><input id="e-dept"></div>
+        <div class="field"><label>Cost Centre</label><input id="e-cc"></div>
+        <div class="field"><label>Cost Code</label><input id="e-ccode"></div>
+        <div class="field"><label>Purchase Date</label><input id="e-pd" type="date"></div>
+        <div class="field"><label>Inputted By</label><input id="e-by"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="actions-left">
+      <button class="btn btn-red" id="del-btn">&#128465; Delete Asset</button>
+    </div>
+    <button class="btn btn-white" onclick="showList()">Cancel</button>
+    <button class="btn btn-blue" onclick="saveEdit()">&#10003; Save Changes</button>
+  </div>
+</div>
+</div>
+
+<!-- ====== ADD VIEW ====== -->
+<div id="v-add" class="view">
+<div class="page">
+  <div class="edit-hd">
+    <button class="back" onclick="showList()">&#8592; Back to register</button>
+    <div>
+      <div class="edit-name">Add New Asset</div>
+      <div class="edit-sub">Fill in the details below</div>
+    </div>
+  </div>
+
+  <div class="sections">
+    <div class="section">
+      <div class="sec-title">Device Information</div>
+      <div class="fields">
+        <div class="field"><label>Asset ID *</label><input id="a-id" placeholder="e.g. DV01999"></div>
+        <div class="field"><label>PA Number</label><input id="a-pa" placeholder="e.g. PA059999"></div>
+        <div class="field wide"><label>Device Description *</label><input id="a-name" placeholder="e.g. MacBook Pro 14"></div>
+        <div class="field"><label>Device Type</label><input id="a-cat" placeholder="e.g. Standard Laptop"></div>
+        <div class="field"><label>Serial Number</label><input id="a-ser"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Status</div>
+      <div class="fields">
+        <div class="field wide">
+          <label>Current Status</label>
+          <select id="a-status">
+            <option>Active</option><option>IT Storage</option><option>Disposed</option><option>Long Term Absence</option><option>Awaiting</option>
+          </select>
+        </div>
+        <div class="field"><label>Disposal Date</label><input id="a-dd" placeholder="DD/MM/YYYY"></div>
+        <div class="field"><label>Disposal Ticket Ref</label><input id="a-dt"></div>
+      </div>
+    </div>
+
+    <div class="section wide">
+      <div class="sec-title">Assignment &amp; Purchase</div>
+      <div class="fields">
+        <div class="field wide"><label>Current User</label><input id="a-user"></div>
+        <div class="field"><label>Department</label><input id="a-dept"></div>
+        <div class="field"><label>Cost Centre</label><input id="a-cc"></div>
+        <div class="field"><label>Cost Code</label><input id="a-ccode"></div>
+        <div class="field"><label>Purchase Date</label><input id="a-pd" type="date"></div>
+        <div class="field"><label>Inputted By</label><input id="a-by"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-white" onclick="showList()">Cancel</button>
+    <button class="btn btn-blue" onclick="saveAdd()">+ Add Asset</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Loading overlay -->
+<div id="loading" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px">
+  <div style="font-size:32px">&#128187;</div>
+  <div style="font-weight:600;font-size:16px;color:var(--text)">Loading Asset Register…</div>
+  <div style="font-size:13px;color:var(--muted)">Fetching data from server</div>
+  <div style="width:200px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px">
+    <div id="load-bar" style="height:100%;width:0%;background:var(--blue);border-radius:2px;transition:width .3s"></div>
+  </div>
+</div>
+
+<script>
+var assets = [];
+var filtered = [];
+var curPage = 1;
+var sKey = 'id', sDir = 1;
+var editIdx = -1;
+
+// ── API ───────────────────────────────────────────────
+async function apiGet() {
+  const r = await fetch('/api/assets');
+  if (!r.ok) throw new Error('Failed to load assets');
+  return r.json();
+}
+
+async function apiPost(data) {
+  const r = await fetch('/api/assets', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error || 'Failed to add asset'); }
+  return r.json();
+}
+
+async function apiPut(id, data) {
+  const r = await fetch('/api/assets/' + encodeURIComponent(id), {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error || 'Failed to update asset'); }
+  return r.json();
+}
+
+async function apiDelete(id) {
+  const r = await fetch('/api/assets/' + encodeURIComponent(id), { method: 'DELETE' });
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error || 'Failed to delete asset'); }
+  return r.json();
+}
+
+// ── INIT ──────────────────────────────────────────────
+async function init() {
+  try {
+    document.getElementById('load-bar').style.width = '40%';
+    assets = await apiGet();
+    document.getElementById('load-bar').style.width = '100%';
+    setTimeout(() => {
+      document.getElementById('loading').style.display = 'none';
+    }, 300);
+    runFilter();
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      '<div style="font-size:32px">&#9888;</div>' +
+      '<div style="font-weight:600;color:var(--red)">Failed to load assets</div>' +
+      '<div style="font-size:13px;color:var(--muted)">' + e.message + '</div>' +
+      '<button class="btn btn-blue" style="margin-top:16px" onclick="init()">Retry</button>';
+  }
+}
+
+// ── VIEWS ─────────────────────────────────────────────
+function showList() {
+  document.getElementById('v-list').className = 'view active';
+  document.getElementById('v-edit').className = 'view';
+  document.getElementById('v-add').className  = 'view';
+  window.scrollTo(0, 0);
+}
+
+function showAdd() {
+  var ids = ['a-id','a-pa','a-name','a-cat','a-ser','a-dd','a-dt','a-user','a-dept','a-cc','a-ccode','a-by'];
+  ids.forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('a-pd').value = '';
+  document.getElementById('a-status').value = 'Active';
+  document.getElementById('v-list').className = 'view';
+  document.getElementById('v-edit').className = 'view';
+  document.getElementById('v-add').className  = 'view active';
+  window.scrollTo(0, 0);
+}
+
+function showEdit(idx) {
+  var a = assets[idx];
+  if (!a) { alert('Error: asset not found at index ' + idx); return; }
+  editIdx = idx;
+  document.getElementById('edit-title').textContent = a.id;
+  document.getElementById('edit-sub').textContent   = a.name + (a.department ? ' · ' + a.department : '');
+  document.getElementById('edit-badge').textContent = a.status;
+  document.getElementById('e-id').value     = a.id            || '';
+  document.getElementById('e-pa').value     = a.paNumber      || '';
+  document.getElementById('e-name').value   = a.name          || '';
+  document.getElementById('e-cat').value    = a.category      || '';
+  document.getElementById('e-ser').value    = a.serial        || '';
+  document.getElementById('e-status').value = a.status        || 'Active';
+  document.getElementById('e-dd').value     = a.disposalDate  || '';
+  document.getElementById('e-dt').value     = a.disposalTicket|| '';
+  document.getElementById('e-user').value   = a.currentUser   || '';
+  document.getElementById('e-dept').value   = a.department    || '';
+  document.getElementById('e-cc').value     = a.costCentre    || '';
+  document.getElementById('e-ccode').value  = a.costCode      || '';
+  document.getElementById('e-pd').value     = a.purchaseDate  || '';
+  document.getElementById('e-by').value     = a.inputtedBy    || '';
+  document.getElementById('del-btn').onclick = function() { deleteAsset(idx); };
+  document.getElementById('v-list').className = 'view';
+  document.getElementById('v-edit').className = 'view active';
+  document.getElementById('v-add').className  = 'view';
+  window.scrollTo(0, 0);
+}
+
+// ── SAVE / DELETE ─────────────────────────────────────
+async function saveEdit() {
+  if (editIdx < 0) { alert('No asset selected.'); return; }
+  const originalId = assets[editIdx].id;
+  const data = {
+    id:             document.getElementById('e-id').value.trim(),
+    paNumber:       document.getElementById('e-pa').value.trim(),
+    name:           document.getElementById('e-name').value.trim(),
+    category:       document.getElementById('e-cat').value.trim(),
+    serial:         document.getElementById('e-ser').value.trim(),
+    status:         document.getElementById('e-status').value,
+    disposalDate:   document.getElementById('e-dd').value.trim(),
+    disposalTicket: document.getElementById('e-dt').value.trim(),
+    currentUser:    document.getElementById('e-user').value.trim(),
+    department:     document.getElementById('e-dept').value.trim(),
+    costCentre:     document.getElementById('e-cc').value.trim(),
+    costCode:       document.getElementById('e-ccode').value.trim(),
+    purchaseDate:   document.getElementById('e-pd').value,
+    inputtedBy:     document.getElementById('e-by').value.trim()
+  };
+  try {
+    const updated = await apiPut(originalId, data);
+    assets[editIdx] = updated;
+    toast('&#10003; Saved — ' + updated.id);
+    showList();
+    runFilter();
+  } catch(e) {
+    alert('Error saving: ' + e.message);
+  }
+}
+
+async function saveAdd() {
+  const id   = document.getElementById('a-id').value.trim();
+  const name = document.getElementById('a-name').value.trim();
+  if (!id)   { alert('Asset ID is required.'); return; }
+  if (!name) { alert('Device Description is required.'); return; }
+  const data = {
+    id, name,
+    paNumber:       document.getElementById('a-pa').value.trim(),
+    category:       document.getElementById('a-cat').value.trim(),
+    serial:         document.getElementById('a-ser').value.trim(),
+    status:         document.getElementById('a-status').value,
+    disposalDate:   document.getElementById('a-dd').value.trim(),
+    disposalTicket: document.getElementById('a-dt').value.trim(),
+    currentUser:    document.getElementById('a-user').value.trim(),
+    department:     document.getElementById('a-dept').value.trim(),
+    costCentre:     document.getElementById('a-cc').value.trim(),
+    costCode:       document.getElementById('a-ccode').value.trim(),
+    purchaseDate:   document.getElementById('a-pd').value,
+    inputtedBy:     document.getElementById('a-by').value.trim()
+  };
+  try {
+    const added = await apiPost(data);
+    assets.push(added);
+    toast('&#10003; Added — ' + added.id);
+    showList();
+    runFilter();
+  } catch(e) {
+    alert('Error adding: ' + e.message);
+  }
+}
+
+async function deleteAsset(idx) {
+  var id = assets[idx] ? assets[idx].id : '?';
+  if (!confirm('Delete asset "' + id + '"? This cannot be undone.')) return;
+  try {
+    await apiDelete(id);
+    assets.splice(idx, 1);
+    toast('Deleted — ' + id);
+    showList();
+    runFilter();
+  } catch(e) {
+    alert('Error deleting: ' + e.message);
+  }
+}
+
+// ── FILTER / SORT ─────────────────────────────────────
+function quickFilter(s) {
+  document.getElementById('f-st').value = s;
+  ['sc-all','sc-act','sc-sto','sc-dis','sc-abs','sc-awa'].forEach(function(id) {
+    document.getElementById(id).classList.remove('on');
+  });
+  var map = {'':'sc-all','Active':'sc-act','IT Storage':'sc-sto','Disposed':'sc-dis','Long Term Absence':'sc-abs','Awaiting':'sc-awa'};
+  if (map[s]) document.getElementById(map[s]).classList.add('on');
+  runFilter();
+}
+
+function runFilter() {
+  var q   = document.getElementById('q').value.toLowerCase();
+  var fst = document.getElementById('f-st').value;
+  var ftp = document.getElementById('f-tp').value;
+  var fdp = document.getElementById('f-dp').value;
+  filtered = [];
+  for (var i=0; i<assets.length; i++) {
+    var a = assets[i];
+    if (fst && a.status !== fst) continue;
+    if (ftp && a.category !== ftp) continue;
+    if (fdp && a.department !== fdp) continue;
+    if (q) {
+      var hay = ((a.id||'') + ' ' + (a.paNumber||'') + ' ' + (a.serial||'') + ' ' + (a.name||'') + ' ' +
+                 (a.category||'') + ' ' + (a.currentUser||'') + ' ' + (a.department||'')).toLowerCase();
+      if (hay.indexOf(q) === -1) continue;
+    }
+    filtered.push(i);
+  }
+  filtered.sort(function(ai, bi) {
+    var av = (assets[ai][sKey] || '').toLowerCase();
+    var bv = (assets[bi][sKey] || '').toLowerCase();
+    return av < bv ? -sDir : av > bv ? sDir : 0;
+  });
+  curPage = 1;
+  render();
+  rebuildDropdowns();
+}
+
+function sortBy(k) {
+  if (sKey === k) sDir = -sDir; else { sKey = k; sDir = 1; }
+  runFilter();
+}
+
+// ── RENDER ────────────────────────────────────────────
+function render() {
+  var counts = {Active:0,'IT Storage':0,Disposed:0,'Long Term Absence':0,Awaiting:0};
+  for (var i=0; i<assets.length; i++) { if (counts[assets[i].status] !== undefined) counts[assets[i].status]++; }
+  document.getElementById('s-all').textContent = assets.length;
+  document.getElementById('s-act').textContent = counts['Active'];
+  document.getElementById('s-sto').textContent = counts['IT Storage'];
+  document.getElementById('s-dis').textContent = counts['Disposed'];
+  document.getElementById('s-abs').textContent = counts['Long Term Absence'];
+  document.getElementById('s-awa').textContent = counts['Awaiting'];
+  document.getElementById('nav-count').textContent = assets.length + ' assets';
+
+  var pp    = parseInt(document.getElementById('f-pp').value) || 50;
+  var total = filtered.length;
+  var pages = Math.max(1, Math.ceil(total / pp));
+  if (curPage > pages) curPage = pages;
+  var start = (curPage - 1) * pp;
+  var slice = filtered.slice(start, start + pp);
+
+  document.getElementById('tinfo').textContent = total === 0
+    ? 'No results'
+    : 'Showing ' + (start+1) + '\u2013' + Math.min(start+pp, total) + ' of ' + total + ' assets';
+
+  var tbody = document.getElementById('tbody');
+  var empty = document.getElementById('empty');
+  if (slice.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; buildPag(0,1); return; }
+  empty.style.display = 'none';
+
+  var rows = '';
+  for (var s=0; s<slice.length; s++) {
+    var origIdx = slice[s];
+    var a = assets[origIdx];
+    var bk = a.status.replace(/ /g, '-');
+    var dt = a.purchaseDate ? new Date(a.purchaseDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '\u2014';
+    rows += '<tr>'
+      + '<td><div class="id">' + esc(a.id) + '</div>' + (a.paNumber ? '<div class="pa">' + esc(a.paNumber) + '</div>' : '') + '</td>'
+      + '<td><span class="mono">' + esc(a.serial||'\u2014') + '</span></td>'
+      + '<td><span class="bold">' + esc(a.name) + '</span></td>'
+      + '<td><span class="gray">' + esc(a.category||'\u2014') + '</span></td>'
+      + '<td>' + esc(a.currentUser||'\u2014') + '</td>'
+      + '<td><span class="gray">' + esc(a.department||'\u2014') + '</span></td>'
+      + '<td><span class="mono">' + dt + '</span></td>'
+      + '<td><span class="badge b' + bk + '">' + esc(a.status) + '</span></td>'
+      + '<td><button class="edit-btn" onclick="showEdit(' + origIdx + ')">Edit</button></td>'
+      + '</tr>';
+  }
+  tbody.innerHTML = rows;
+  buildPag(total, pages);
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function buildPag(total, pages) {
+  var pag = document.getElementById('pag');
+  if (total === 0) { pag.innerHTML = ''; return; }
+  var h = '<button class="pb" onclick="goPage(' + (curPage-1) + ')" ' + (curPage<=1?'disabled':'') + '>&#8249;</button>';
+  var r = [];
+  if (pages <= 7) { for (var i=1; i<=pages; i++) r.push(i); }
+  else {
+    r.push(1);
+    if (curPage > 3) r.push('\u2026');
+    for (var i=Math.max(2,curPage-1); i<=Math.min(pages-1,curPage+1); i++) r.push(i);
+    if (curPage < pages-2) r.push('\u2026');
+    r.push(pages);
+  }
+  for (var j=0; j<r.length; j++) {
+    if (r[j] === '\u2026') h += '<button class="pb" disabled>&#8230;</button>';
+    else h += '<button class="pb' + (r[j]===curPage?' on':'') + '" onclick="goPage(' + r[j] + ')">' + r[j] + '</button>';
+  }
+  h += '<button class="pb" onclick="goPage(' + (curPage+1) + ')" ' + (curPage>=pages?'disabled':'') + '>&#8250;</button>';
+  pag.innerHTML = h;
+}
+
+function goPage(p) { curPage = p; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function rebuildDropdowns() {
+  var ct = document.getElementById('f-tp').value;
+  var cd = document.getElementById('f-dp').value;
+  var types = {}, depts = {};
+  for (var i=0; i<assets.length; i++) {
+    if (assets[i].category) types[assets[i].category] = 1;
+    if (assets[i].department) depts[assets[i].department] = 1;
+  }
+  var tList = Object.keys(types).sort();
+  var dList = Object.keys(depts).sort();
+  var th = '<option value="">All types</option>';
+  for (var t=0; t<tList.length; t++) th += '<option' + (tList[t]===ct?' selected':'') + '>' + esc(tList[t]) + '</option>';
+  document.getElementById('f-tp').innerHTML = th;
+  var dh = '<option value="">All departments</option>';
+  for (var d=0; d<dList.length; d++) dh += '<option' + (dList[d]===cd?' selected':'') + '>' + esc(dList[d]) + '</option>';
+  document.getElementById('f-dp').innerHTML = dh;
+}
+
+function exportCSV() {
+  var h = 'UI,PA Number,Serial Number,Device Description,Device Type,Current User,Current Department,Cost Centre,Cost Code,Purchase Date,Inputted By,Current Status,Disposal Date,Disposal Ticket Ref\n';
+  var rows = '';
+  for (var i=0; i<assets.length; i++) {
+    var a = assets[i];
+    rows += [a.id,a.paNumber,a.serial,a.name,a.category,a.currentUser,a.department,a.costCentre,a.costCode,a.purchaseDate,a.inputtedBy,a.status,a.disposalDate,a.disposalTicket]
+      .map(function(v){ return '"' + (v||'').replace(/"/g,'""') + '"'; }).join(',') + '\n';
+  }
+  var blob = new Blob([h+rows], {type:'text/csv'});
+  var url  = URL.createObjectURL(blob);
+  var el   = document.createElement('a');
+  el.href = url; el.download = 'Asset_Register_Export.csv'; el.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exported');
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.className = 'toast show';
+  setTimeout(function(){ t.className = 'toast'; }, 3000);
+}
+
+// ── THEME ─────────────────────────────────────────────
+function toggleTheme() {
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('theme-btn').textContent = '\u263D';
+    localStorage.setItem('theme','light');
+  } else {
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('theme-btn').textContent = '\u2600';
+    localStorage.setItem('theme','dark');
+  }
+}
+(function(){
+  var saved = localStorage.getItem('theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (saved === 'dark' || (!saved && prefersDark)) {
+    document.documentElement.setAttribute('data-theme','dark');
+    document.getElementById('theme-btn').textContent = '\u2600';
+  }
+})();
+
+// Start
+init();
+</script>
+</body>
+</html>
